@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import itertools
+import shutil
 from pathlib import Path
 
 
@@ -14,7 +15,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def load_ignore_config(path: Path):
+def load_ignore_config(path: Path, default_path: Path):
+    if not path.exists() and default_path.exists():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(default_path, path)
     config = {"common": [], "zip": [], "packager": []}
     if not path.exists():
         return config
@@ -38,7 +42,10 @@ def load_ignore_config(path: Path):
     return config
 
 
-def write_pkgmeta(pkgmeta_path: Path, addon_folder: str, addon_title: str, packager_entries):
+def write_pkgmeta(pkgmeta_path: Path, template_path: Path, addon_folder: str, addon_title: str, packager_entries):
+    if not pkgmeta_path.exists():
+        pkgmeta_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(template_path, pkgmeta_path)
     text = pkgmeta_path.read_text()
     replacements = {
         "__ADDON_FOLDER__": addon_folder,
@@ -69,8 +76,11 @@ def main():
     pkgmeta_path = Path(args.pkgmeta)
     ignore_config_path = Path(args.ignore_config)
     zip_exclude_path = Path(args.zip_exclude)
+    template_dir = Path(__file__).resolve().parents[1] / "templates"
+    default_pkgmeta = template_dir / ".pkgmeta"
+    default_ignore = template_dir / "packager-ignore.yml"
 
-    config = load_ignore_config(ignore_config_path)
+    config = load_ignore_config(ignore_config_path, default_ignore)
     common = config.get("common", [])
     zip_only = config.get("zip", [])
     packager_only = config.get("packager", [])
@@ -78,7 +88,7 @@ def main():
     zip_entries = list(itertools.chain(common, zip_only))
     packager_entries = list(itertools.chain(common, packager_only))
 
-    write_pkgmeta(pkgmeta_path, args.addon_folder, args.addon_title, packager_entries)
+    write_pkgmeta(pkgmeta_path, default_pkgmeta, args.addon_folder, args.addon_title, packager_entries)
     write_zip_ignore(zip_exclude_path, zip_entries)
 
 
