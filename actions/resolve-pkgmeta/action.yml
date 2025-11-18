@@ -1,0 +1,42 @@
+name: Resolve pkgmeta metadata
+description: Fill pkgmeta template tokens and compute zip ignore list
+inputs:
+  addon_folder:
+    description: Addon folder/slug name
+    required: true
+  addon_title:
+    description: Human-friendly addon title
+    required: true
+  pkgmeta_path:
+    description: Path to the pkgmeta template that contains placeholders
+    required: false
+    default: .pkgmeta
+  ignore_config_path:
+    description: Path to the YAML file describing ignore lists
+    required: false
+    default: packager-ignore.yml
+  zip_exclude_path:
+    description: File path to write rsync exclude patterns to
+    required: false
+    default: zip-ignore.txt
+outputs:
+  zip-exclude-path:
+    description: Path to the generated zip ignore file
+    value: ${{ inputs.zip_exclude_path }}
+runs:
+  using: composite
+  steps:
+    - name: Populate pkgmeta and ignore lists
+      shell: bash
+      run: |
+        set -euo pipefail
+        python3 "$GITHUB_ACTION_PATH/resolve_pkgmeta.py" \
+          --pkgmeta "${{ inputs.pkgmeta_path }}" \
+          --ignore-config "${{ inputs.ignore_config_path }}" \
+          --zip-exclude "${{ inputs.zip_exclude_path }}" \
+          --addon-folder "${{ inputs.addon_folder }}" \
+          --addon-title "${{ inputs.addon_title }}"
+    - name: Expose zip ignore path
+      shell: bash
+      run: |
+        echo "zip-exclude-path=${{ inputs.zip_exclude_path }}" >> "$GITHUB_OUTPUT"

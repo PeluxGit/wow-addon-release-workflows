@@ -1,0 +1,39 @@
+name: Extract changelog section
+description: Generate a release changelog file from CHANGELOG.md
+inputs:
+  changelog_path:
+    description: Source changelog file in markdown
+    required: false
+    default: CHANGELOG.md
+  output_path:
+    description: Destination file for the extracted release notes
+    required: false
+    default: CHANGELOG_RELEASE.md
+  version_ref:
+    description: Git ref name containing the version tag
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Extract changelog
+      shell: bash
+      run: |
+        set -euo pipefail
+        VERSION="${{ inputs.version_ref }}"
+        VERSION="${VERSION#v}"
+        VERSION="${VERSION#V}"
+        echo "Extracting changelog for version ${VERSION}"
+        awk -v v="$VERSION" '
+          BEGIN{found=0}
+          /^##[[:space:]]/{
+            if(found) exit
+            if($0 ~ "^##[[:space:]]*\\[[[:space:]]*" v "[[:space:]]*\\]") { found=1; next }
+          }
+          { if(found) print }
+        ' "${{ inputs.changelog_path }}" | awk 'BEGIN{skip=1} { if(skip && $0 ~ /^##[[:space:]]/) next; skip=0; print }' > "${{ inputs.output_path }}" || true
+        if [ ! -s "${{ inputs.output_path }}" ]; then
+          echo "No specific section found; using full changelog"
+          cp "${{ inputs.changelog_path }}" "${{ inputs.output_path }}"
+        fi
+        echo "Final changelog preview:"
+        head -n 50 "${{ inputs.output_path }}"

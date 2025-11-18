@@ -1,0 +1,21 @@
+name: Update TOC version
+description: Patch the TOC file with the version derived from the current ref
+inputs:
+  toc_file:
+    description: Path to the TOC file to update
+    required: true
+  version_ref:
+    description: Git ref name (e.g., tag) that encodes the version
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Update TOC metadata
+      shell: bash
+      run: |
+        set -euo pipefail
+        version="${{ inputs.version_ref }}"
+        version="${version#v}"
+        version="${version#V}"
+        sed -i "s/^## Version: .*/## Version: ${version}/" "${{ inputs.toc_file }}"
+        echo "Updated ${{ inputs.toc_file }} to version ${version}"

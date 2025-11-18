@@ -1,0 +1,100 @@
+name: Addon Release
+
+on:
+  workflow_call:
+    inputs:
+      addon_folder:
+        description: Addon folder/slug name
+        required: true
+        type: string
+      addon_title:
+        description: Friendly addon title (defaults to folder name when blank)
+        required: false
+        type: string
+      skip_publish:
+        description: Skip publishing to CurseForge/Wago/WoWI
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      CURSEFORGE_TOKEN:
+        required: false
+      WAGO_TOKEN:
+        required: false
+      WOWI_TOKEN:
+        required: false
+
+jobs:
+  build-and-publish:
+    name: Build and publish addon
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      ADDON_FOLDER: ${{ inputs.addon_folder }}
+      ADDON_TITLE: ${{ inputs.addon_title && inputs.addon_title || inputs.addon_folder }}
+      TOC_FILE: ${{ format('{0}.toc', inputs.addon_folder) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve pkgmeta template values
+        id: pkgmeta
+        uses: ./actions/resolve-pkgmeta
+        with:
+          addon_folder: ${{ env.ADDON_FOLDER }}
+          addon_title: ${{ env.ADDON_TITLE }}
+
+      - name: Update TOC version from tag
+        uses: ./actions/update-toc
+        with:
+          toc_file: ${{ env.TOC_FILE }}
+          version_ref: ${{ github.ref_name }}
+
+      - name: Create addon zip
+        id: build_zip
+        uses: ./actions/build-zip
+        with:
+          addon_folder: ${{ env.ADDON_FOLDER }}
+          ref_name: ${{ github.ref_name }}
+          zip_exclude_path: ${{ steps.pkgmeta.outputs.zip-exclude-path }}
+
+      - name: Generate release changelog from CHANGELOG.md
+        uses: ./actions/changelog-from-md
+        with:
+          changelog_path: CHANGELOG.md
+          output_path: CHANGELOG_RELEASE.md
+          version_ref: ${{ github.ref_name }}
+
+      - name: Upload asset to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build_zip.outputs.zip-path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update GitHub release notes
+        if: ${{ github.event_name == 'release' }}
+        uses: ./actions/update-release-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          repository: ${{ github.repository }}
+          notes_file: CHANGELOG_RELEASE.md
+
+      - name: Determine publish targets
+        id: publish_targets
+        uses: ./actions/determine-publish-targets
+        env:
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          WAGO_TOKEN: ${{ secrets.WAGO_TOKEN }}
+          WOWI_TOKEN: ${{ secrets.WOWI_TOKEN }}
+
+      - name: Publish to addon services
+        if: ${{ !inputs.skip_publish && !github.event.release.prerelease && steps.publish_targets.outputs.has_any == 'true' }}
+        uses: BigWigsMods/packager@v2
+        env:
+          CF_API_KEY: ${{ secrets.CURSEFORGE_TOKEN }}
+          WAGO_API_TOKEN: ${{ secrets.WAGO_TOKEN }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_TOKEN }}

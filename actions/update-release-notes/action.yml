@@ -1,0 +1,24 @@
+name: Update GitHub release notes
+description: Replace the release body with generated changelog content
+inputs:
+  tag_name:
+    description: Release tag name to edit
+    required: true
+  repository:
+    description: Repository owner/name (e.g., user/repo)
+    required: true
+  notes_file:
+    description: Path to changelog file used for release notes
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Update release body
+      shell: bash
+      env:
+        GH_TOKEN: ${{ env.GITHUB_TOKEN }}
+      run: |
+        set -euo pipefail
+        gh release edit "${{ inputs.tag_name }}" \
+          --repo "${{ inputs.repository }}" \
+          --notes-file "${{ inputs.notes_file }}"

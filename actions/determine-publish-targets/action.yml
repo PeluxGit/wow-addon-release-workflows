@@ -1,0 +1,43 @@
+name: Determine publish targets
+description: Detect which addon provider tokens are available
+outputs:
+  has_cf:
+    description: Whether a CurseForge token exists
+    value: ${{ steps.detect.outputs.has_cf }}
+  has_wago:
+    description: Whether a Wago token exists
+    value: ${{ steps.detect.outputs.has_wago }}
+  has_wowi:
+    description: Whether a WoWInterface token exists
+    value: ${{ steps.detect.outputs.has_wowi }}
+  has_any:
+    description: Whether any provider tokens exist
+    value: ${{ steps.detect.outputs.has_any }}
+runs:
+  using: composite
+  steps:
+    - name: Inspect tokens
+      id: detect
+      shell: bash
+      run: |
+        set -euo pipefail
+        has_cf=false
+        has_wago=false
+        has_wowi=false
+        has_any=false
+        if [ -n "${CURSEFORGE_TOKEN:-}" ]; then
+          has_cf=true
+          has_any=true
+        fi
+        if [ -n "${WAGO_TOKEN:-}" ]; then
+          has_wago=true
+          has_any=true
+        fi
+        if [ -n "${WOWI_TOKEN:-}" ]; then
+          has_wowi=true
+          has_any=true
+        fi
+        echo "has_cf=${has_cf}" >> "$GITHUB_OUTPUT"
+        echo "has_wago=${has_wago}" >> "$GITHUB_OUTPUT"
+        echo "has_wowi=${has_wowi}" >> "$GITHUB_OUTPUT"
+        echo "has_any=${has_any}" >> "$GITHUB_OUTPUT"

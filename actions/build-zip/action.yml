@@ -1,0 +1,32 @@
+name: Build addon zip
+description: Package the addon folder into a distributable zip
+inputs:
+  addon_folder:
+    description: Folder name for the addon
+    required: true
+  ref_name:
+    description: Git reference name (used for the archive name)
+    required: true
+  zip_exclude_path:
+    description: File containing rsync exclude patterns
+    required: true
+outputs:
+  zip-path:
+    description: Path to the generated zip file
+    value: ${{ steps.build.outputs.zip-path }}
+runs:
+  using: composite
+  steps:
+    - name: Build zip
+      id: build
+      shell: bash
+      run: |
+        set -euxo pipefail
+        ZIP_NAME="${{ inputs.addon_folder }}-${{ inputs.ref_name }}.zip"
+        mkdir -p "package/${{ inputs.addon_folder }}"
+        rsync -av --exclude-from="${{ inputs.zip_exclude_path }}" ./ "package/${{ inputs.addon_folder }}/"
+        cd package
+        zip -r "../${ZIP_NAME}" "${{ inputs.addon_folder }}"
+        cd ..
+        ls -lah "${ZIP_NAME}"
+        echo "zip-path=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
