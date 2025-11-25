@@ -2,6 +2,7 @@
 common:
   - README.md
   - CHANGELOG.md
+  - CHANGELOG_RELEASE.md
   - LICENSE
   - .git
   - .github
