@@ -40,27 +40,27 @@ jobs:
 
       - name: Resolve pkgmeta template values
         id: pkgmeta
-        uses: ./actions/resolve-pkgmeta
+        uses: PeluxGit/wow-addon-release-workflows/actions/resolve-pkgmeta@v1
         with:
           addon_folder: ${{ env.ADDON_FOLDER }}
           addon_title: ${{ env.ADDON_TITLE }}
 
       - name: Update TOC version from tag
-        uses: ./actions/update-toc
+        uses: PeluxGit/wow-addon-release-workflows/actions/update-toc@v1
         with:
           toc_file: ${{ env.TOC_FILE }}
           version_ref: ${{ github.ref_name }}
 
       - name: Create addon zip
         id: build_zip
-        uses: ./actions/build-zip
+        uses: PeluxGit/wow-addon-release-workflows/actions/build-zip@v1
         with:
           addon_folder: ${{ env.ADDON_FOLDER }}
           ref_name: ${{ github.ref_name }}
           zip_exclude_path: ${{ steps.pkgmeta.outputs.zip-exclude-path }}
 
       - name: Generate release changelog from CHANGELOG.md
-        uses: ./actions/changelog-from-md
+        uses: PeluxGit/wow-addon-release-workflows/actions/changelog-from-md@v1
         with:
           changelog_path: CHANGELOG.md
           output_path: CHANGELOG_RELEASE.md
@@ -75,7 +75,7 @@ jobs:
 
       - name: Update GitHub release notes
         if: ${{ github.event_name == 'release' }}
-        uses: ./actions/update-release-notes
+        uses: PeluxGit/wow-addon-release-workflows/actions/update-release-notes@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -85,7 +85,7 @@ jobs:
 
       - name: Determine publish targets
         id: publish_targets
-        uses: ./actions/determine-publish-targets
+        uses: PeluxGit/wow-addon-release-workflows/actions/determine-publish-targets@v1
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           WAGO_TOKEN: ${{ secrets.WAGO_TOKEN }}
