@@ -1,4 +1,12 @@
 name: Release Addon
+# Usage:
+# - Copy into .github/workflows/release.yml in your addon repo.
+# - Define repo variables (Settings > Secrets and variables > Actions > Variables):
+#     ADDON_FOLDER: addon folder/slug (required; defaults to repo name if omitted)
+#     ADDON_TITLE: display name (optional; defaults to addon folder)
+# - Add provider secrets (Settings > Secrets and variables > Actions > Secrets):
+#     CURSEFORGE_TOKEN, WAGO_TOKEN, WOWI_TOKEN
+# - Triggers on GitHub release publish; workflow_dispatch supports skip_publish to only build the zip.
 on:
   release:
     types: [published]
