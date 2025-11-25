@@ -1,0 +1,23 @@
+# Template TOC for WoW addons. Copy/rename to match your addon folder (e.g., __ADDON_FOLDER__.toc).
+# ## Version is auto-updated by the workflow using the release tag.
+## Interface: 110205
+## Title: __ADDON_TITLE__
+## Notes: Short description shown in-game
+## Author: YourName
+## Version: 0.0.1
+# Optional saved variables (remove if unused)
+## SavedVariables: MyAddonDB
+## SavedVariablesPerCharacter: MyAddonCharDB
+# Optional dependency hints
+## OptionalDeps:
+## Dependencies:
+# Optional provider IDs (uncomment and set if publishing to these services)
+# ## X-Curse-Project-ID: 000000
+# ## X-Wago-ID: AbCdE
+# ## X-WoWI-ID: 12345
+# Optional metadata commonly used on addon sites
+# ## X-Category: User Interface
+# ## X-Website: https://example.com
+
+# Files included in the addon (add your Lua/XML files below)
+YourAddon.lua
