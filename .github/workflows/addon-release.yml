@@ -40,27 +40,27 @@ jobs:
 
       - name: Resolve pkgmeta template values
         id: pkgmeta
-        uses: PeluxGit/wow-addon-release-workflows/actions/resolve-pkgmeta@v1
+        uses: PeluxGit/wow-addon-release-workflows/actions/resolve-pkgmeta@main
         with:
           addon_folder: ${{ env.ADDON_FOLDER }}
           addon_title: ${{ env.ADDON_TITLE }}
 
       - name: Update TOC version from tag
-        uses: PeluxGit/wow-addon-release-workflows/actions/update-toc@v1
+        uses: PeluxGit/wow-addon-release-workflows/actions/update-toc@main
         with:
           toc_file: ${{ env.TOC_FILE }}
           version_ref: ${{ github.ref_name }}
 
       - name: Create addon zip
         id: build_zip
-        uses: PeluxGit/wow-addon-release-workflows/actions/build-zip@v1
+        uses: PeluxGit/wow-addon-release-workflows/actions/build-zip@main
         with:
           addon_folder: ${{ env.ADDON_FOLDER }}
           ref_name: ${{ github.ref_name }}
           zip_exclude_path: ${{ steps.pkgmeta.outputs.zip-exclude-path }}
 
       - name: Generate release changelog from CHANGELOG.md
-        uses: PeluxGit/wow-addon-release-workflows/actions/changelog-from-md@v1
+        uses: PeluxGit/wow-addon-release-workflows/actions/changelog-from-md@main
         with:
           changelog_path: CHANGELOG.md
           output_path: CHANGELOG_RELEASE.md
@@ -75,7 +75,7 @@ jobs:
 
       - name: Update GitHub release notes
         if: ${{ github.event_name == 'release' }}
-        uses: PeluxGit/wow-addon-release-workflows/actions/update-release-notes@v1
+        uses: PeluxGit/wow-addon-release-workflows/actions/update-release-notes@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -85,7 +85,7 @@ jobs:
 
       - name: Determine publish targets
         id: publish_targets
-        uses: PeluxGit/wow-addon-release-workflows/actions/determine-publish-targets@v1
+        uses: PeluxGit/wow-addon-release-workflows/actions/determine-publish-targets@main
         env:
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           WAGO_TOKEN: ${{ secrets.WAGO_TOKEN }}
