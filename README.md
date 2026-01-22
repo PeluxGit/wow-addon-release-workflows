@@ -4,7 +4,7 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 
 ## Setup in your addon repo
 
-1. Copy the template files:
+1. (Optional) Copy the template files if you want to customize defaults:
    - `.pkgmeta` and `packager-ignore.yml` from `templates/`
    - `.github/workflows/release.yml` from `templates/release.yml`
 2. Define repo variables (`Settings → Secrets and variables → Actions → Variables`):
@@ -30,7 +30,7 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 
 ## Included Custom Actions
 
-- `resolve-pkgmeta` – fills `.pkgmeta`, copies default templates if missing, and writes `zip-ignore.txt` from `packager-ignore.yml`.
+- `resolve-pkgmeta` – fills `.pkgmeta` (creates from template if missing), uses default ignore template if `packager-ignore.yml` is missing, and writes `zip-ignore.txt`.
 - `update-toc` – updates the `## Version` line in the `.toc`.
 - `build-zip` – packages the addon folder into `<addon_folder>-<tag>.zip` using the generated exclude list.
 - `changelog-from-md` – writes `CHANGELOG_RELEASE.md` from the matching section of `CHANGELOG.md`.
@@ -64,4 +64,4 @@ jobs:
 
 ## Optional files
 
-If your repo omits `.pkgmeta` or `packager-ignore.yml`, the workflow copies the default templates from this repo. Edit them in your addon repo if you need custom metadata or exclusions.
+If your repo omits `.pkgmeta`, the workflow creates it from the template. If your repo omits `packager-ignore.yml`, the workflow reads the default template from this repo without copying it into your addon repo. Add the files locally only if you need custom metadata or exclusions.

@@ -16,14 +16,15 @@ def parse_args():
 
 
 def load_ignore_config(path: Path, default_path: Path):
-    if not path.exists() and default_path.exists():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(default_path, path)
     config = {"common": [], "zip": [], "packager": []}
-    if not path.exists():
+    if path.exists():
+        source_path = path
+    elif default_path.exists():
+        source_path = default_path
+    else:
         return config
     current = None
-    for raw_line in path.read_text().splitlines():
+    for raw_line in source_path.read_text().splitlines():
         stripped = raw_line.strip()
         if not stripped or stripped.startswith("#"):
             continue
@@ -76,7 +77,7 @@ def main():
     pkgmeta_path = Path(args.pkgmeta)
     ignore_config_path = Path(args.ignore_config)
     zip_exclude_path = Path(args.zip_exclude)
-    template_dir = Path(__file__).resolve().parents[1] / "templates"
+    template_dir = Path(__file__).resolve().parents[2] / "templates"
     default_pkgmeta = template_dir / ".pkgmeta"
     default_ignore = template_dir / "packager-ignore.yml"
 

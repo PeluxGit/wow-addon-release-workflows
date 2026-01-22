@@ -1,5 +1,5 @@
 name: Resolve pkgmeta metadata
-description: Fill pkgmeta template tokens and compute zip ignore list
+description: Fill pkgmeta template tokens and compute zip ignore list (uses defaults if missing)
 inputs:
   addon_folder:
     description: Addon folder/slug name
@@ -12,7 +12,7 @@ inputs:
     required: false
     default: .pkgmeta
   ignore_config_path:
-    description: Path to the YAML file describing ignore lists
+    description: Path to the YAML file describing ignore lists (falls back to template if missing)
     required: false
     default: packager-ignore.yml
   zip_exclude_path:
