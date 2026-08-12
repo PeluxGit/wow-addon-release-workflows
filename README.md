@@ -4,17 +4,16 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 
 ## Setup in your addon repo
 
-1. (Optional) Copy the template files if you want to customize defaults:
-   - `.pkgmeta` and `packager-ignore.yml` from `templates/`
-   - `.github/workflows/release.yml` from `templates/release.yml`
-2. Define repo variables (`Settings → Secrets and variables → Actions → Variables`):
+1. Add the caller workflow — copy `templates/release.yml` to `.github/workflows/release.yml` in your addon repo, or paste the [wrapper workflow](#template-wrapper-workflow) below.
+2. (Optional) Copy `.pkgmeta` and `packager-ignore.yml` from `templates/` if you want to customize defaults. If omitted, the reusable workflow generates/reads defaults for these (see [Optional files](#optional-files)).
+3. Define repo variables (`Settings → Secrets and variables → Actions → Variables`):
    - `ADDON_FOLDER`: folder/slug (required)
    - `ADDON_TITLE`: friendly name (optional)
-3. Add provider secrets (`Settings → Secrets and variables → Actions → Secrets`)
+4. Add provider secrets (`Settings → Secrets and variables → Actions → Secrets`)
    - `CURSEFORGE_TOKEN`
    - `WAGO_TOKEN`
    - `WOWI_TOKEN`
-4. Commit and push. When you publish a release or run the workflow manually, your addon is packaged, the GitHub release notes are updated, and, unless skipped, uploads go to the providers that have tokens configured.
+5. Commit and push. When you publish a release or run the workflow manually, your addon is packaged, the GitHub release notes are updated, and, unless skipped, uploads go to the providers that have tokens configured.
 
 ## Workflow Steps Overview
 
