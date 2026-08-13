@@ -4,7 +4,7 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 
 ## Setup in your addon repo
 
-1. Add the caller workflow — copy `templates/release.yml` to `.github/workflows/release.yml` in your addon repo, or paste the [wrapper workflow](#template-wrapper-workflow) below.
+1. Add the caller workflow — copy [`templates/release.yml`](templates/release.yml) to `.github/workflows/release.yml` in your addon repo.
 2. (Optional) Copy `.pkgmeta` and `packager-ignore.yml` from `templates/` if you want to customize defaults. If omitted, the reusable workflow generates/reads defaults for these (see [Optional files](#optional-files)).
 3. (Optional) Set your `.toc`'s `## Version:` line to the `{current version}` placeholder (as in `templates/addon.toc`) if you want the workflow to auto-fill it from the release tag on each run. Leave it as a literal version to manage it yourself.
 4. Define repo variables (`Settings → Secrets and variables → Actions → Variables`):
@@ -27,31 +27,6 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 7. **Update GitHub release notes** (`update-release-notes`) – syncs the GitHub release body with `CHANGELOG_RELEASE.md` via `gh release edit`.
 8. **Determine publish targets** (`determine-publish-targets`) – exposes which provider secrets (CF/Wago/WoWI) are set so the packager step can auto-skip when nothing is configured.
 9. **Publish to addon services** – `BigWigsMods/packager@v2` uploads to CurseForge/Wago/WoWI when tokens are available and the release isn’t marked prerelease (or `skip_publish`).
-
-## Template wrapper workflow
-
-```yaml
-name: Release Addon
-on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      skip_publish:
-        description: "Only create zip, don't push to addon services"
-        required: false
-        type: boolean
-        default: false
-
-jobs:
-  release:
-    uses: PeluxGit/wow-addon-release-workflows/.github/workflows/addon-release.yml@v1
-    with:
-      addon_folder: ${{ vars.ADDON_FOLDER || github.event.repository.name }}
-      addon_title: ${{ vars.ADDON_TITLE || vars.ADDON_FOLDER || github.event.repository.name }}
-      skip_publish: ${{ inputs.skip_publish }}
-    secrets: inherit
-```
 
 ## Optional files
 
