@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Pelux/Dev/WoW-Crest-Xmute-Helper/**)"
+    ]
+  }
+}

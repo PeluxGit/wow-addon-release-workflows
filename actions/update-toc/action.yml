@@ -1,5 +1,5 @@
 name: Update TOC version
-description: Patch the TOC file with the version derived from the current ref
+description: Patch the TOC file with the version derived from the current ref, if a version placeholder is present
 inputs:
   toc_file:
     description: Path to the TOC file to update
@@ -17,5 +17,10 @@ runs:
         version="${{ inputs.version_ref }}"
         version="${version#v}"
         version="${version#V}"
-        sed -i "s/^## Version: .*/## Version: ${version}/" "${{ inputs.toc_file }}"
-        echo "Updated ${{ inputs.toc_file }} to version ${version}"
+        toc_file="${{ inputs.toc_file }}"
+        if grep -q '^## Version:.*{current version}' "$toc_file"; then
+          sed -i "/^## Version:/s/{current version}/${version}/" "$toc_file"
+          echo "Updated ${toc_file} to version ${version}"
+        else
+          echo "No '{current version}' placeholder found in ${toc_file}; leaving Version line as-is."
+        fi

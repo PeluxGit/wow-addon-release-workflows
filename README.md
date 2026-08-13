@@ -6,35 +6,27 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 
 1. Add the caller workflow — copy `templates/release.yml` to `.github/workflows/release.yml` in your addon repo, or paste the [wrapper workflow](#template-wrapper-workflow) below.
 2. (Optional) Copy `.pkgmeta` and `packager-ignore.yml` from `templates/` if you want to customize defaults. If omitted, the reusable workflow generates/reads defaults for these (see [Optional files](#optional-files)).
-3. Define repo variables (`Settings → Secrets and variables → Actions → Variables`):
+3. (Optional) Set your `.toc`'s `## Version:` line to the `{current version}` placeholder (as in `templates/addon.toc`) if you want the workflow to auto-fill it from the release tag on each run. Leave it as a literal version to manage it yourself.
+4. Define repo variables (`Settings → Secrets and variables → Actions → Variables`):
    - `ADDON_FOLDER`: folder/slug (required)
    - `ADDON_TITLE`: friendly name (optional)
-4. Add provider secrets (`Settings → Secrets and variables → Actions → Secrets`)
+5. Add provider secrets (`Settings → Secrets and variables → Actions → Secrets`)
    - `CURSEFORGE_TOKEN`
    - `WAGO_TOKEN`
    - `WOWI_TOKEN`
-5. Commit and push. When you publish a release or run the workflow manually, your addon is packaged, the GitHub release notes are updated, and, unless skipped, uploads go to the providers that have tokens configured.
+6. Commit and push. When you publish a release or run the workflow manually, your addon is packaged, the GitHub release notes are updated, and, unless skipped, uploads go to the providers that have tokens configured.
 
 ## Workflow Steps Overview
 
 1. **Checkout** – fetches the addon repo so the workflow can read `.pkgmeta`, the TOC, etc.
-2. **Resolve pkgmeta template values** – custom action that fills `.pkgmeta`, ensures ignore lists, and writes `zip-ignore.txt`.
-3. **Update TOC version** – custom action that patches the `## Version` line in the `.toc`.
-4. **Build addon zip** – custom action that rsyncs files, applies the ignore list, and zips the addon folder.
-5. **Generate release changelog** – custom action that extracts the version section from `CHANGELOG.md`.
+2. **Resolve pkgmeta template values** (`resolve-pkgmeta`) – fills `.pkgmeta` (creates from template if missing), uses default ignore template if `packager-ignore.yml` is missing, and writes `zip-ignore.txt`.
+3. **Update TOC version** (`update-toc`) – if `<addon_folder>.toc` has `## Version: {current version}`, replaces the placeholder with the version parsed from the triggering ref (the release tag, e.g. `v1.2.3` → `1.2.3`; a leading `v`/`V` is stripped). Skipped otherwise, leaving the `## Version:` line untouched.
+4. **Build addon zip** (`build-zip`) – packages the addon folder into `<addon_folder>-<tag>.zip` using the generated exclude list.
+5. **Generate release changelog** (`changelog-from-md`) – writes `CHANGELOG_RELEASE.md` from the matching section of `CHANGELOG.md`.
 6. **Upload asset to GitHub release** – `softprops/action-gh-release` attaches the generated zip.
-7. **Update GitHub release notes** – custom action running `gh release edit` with the changelog.
-8. **Determine publish targets** – custom action that checks which provider tokens exist.
+7. **Update GitHub release notes** (`update-release-notes`) – syncs the GitHub release body with `CHANGELOG_RELEASE.md` via `gh release edit`.
+8. **Determine publish targets** (`determine-publish-targets`) – exposes which provider secrets (CF/Wago/WoWI) are set so the packager step can auto-skip when nothing is configured.
 9. **Publish to addon services** – `BigWigsMods/packager@v2` uploads to CurseForge/Wago/WoWI when tokens are available and the release isn’t marked prerelease (or `skip_publish`).
-
-## Included Custom Actions
-
-- `resolve-pkgmeta` – fills `.pkgmeta` (creates from template if missing), uses default ignore template if `packager-ignore.yml` is missing, and writes `zip-ignore.txt`.
-- `update-toc` – updates the `## Version` line in the `.toc`.
-- `build-zip` – packages the addon folder into `<addon_folder>-<tag>.zip` using the generated exclude list.
-- `changelog-from-md` – writes `CHANGELOG_RELEASE.md` from the matching section of `CHANGELOG.md`.
-- `update-release-notes` – syncs the GitHub release body with `CHANGELOG_RELEASE.md` via `gh release edit`.
-- `determine-publish-targets` – exposes which provider secrets (CF/Wago/WoWI) are set so the packager step can auto-skip when nothing is configured.
 
 ## Template wrapper workflow
 
