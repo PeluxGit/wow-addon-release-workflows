@@ -15,6 +15,7 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
    - `WAGO_TOKEN`
    - `WOWI_TOKEN`
 6. Commit and push. When you publish a release or run the workflow manually, your addon is packaged, the GitHub release notes are updated, and, unless skipped, uploads go to the providers that have tokens configured.
+7. Maintain a `CHANGELOG.md` at the repo root using [Keep a Changelog](https://keepachangelog.com/) style headings: `## [1.2.3] - 2026-08-13` (version in brackets, no `v` prefix). The workflow strips a leading `v`/`V` off the release tag before matching, so `1.2.3` in the changelog matches tags `1.2.3`, `v1.2.3`, or `V1.2.3` alike — but not e.g. `V1.2.3` written as `## [V1.2.3]` in the changelog itself, or a tag like `release-1.2.3`. Only the section for the released version is used for the GitHub release notes and the CurseForge/Wago/WoWInterface changelog (see step 5 below).
 
 ## Workflow Steps Overview
 
@@ -22,11 +23,11 @@ Reusable GitHub Actions workflow for building and publishing World of Warcraft a
 2. **Resolve pkgmeta template values** (`resolve-pkgmeta`) – fills `.pkgmeta` (creates from template if missing), uses default ignore template if `packager-ignore.yml` is missing, and writes `zip-ignore.txt`.
 3. **Update TOC version** (`update-toc`) – if `<addon_folder>.toc` has `## Version: {current version}`, replaces the placeholder with the version parsed from the triggering ref (the release tag, e.g. `v1.2.3` → `1.2.3`; a leading `v`/`V` is stripped). Skipped otherwise, leaving the `## Version:` line untouched.
 4. **Build addon zip** (`build-zip`) – packages the addon folder into `<addon_folder>-<tag>.zip` using the generated exclude list.
-5. **Generate release changelog** (`changelog-from-md`) – writes `CHANGELOG_RELEASE.md` from the matching section of `CHANGELOG.md`.
+5. **Generate release changelog** (`changelog-from-md`) – writes `CHANGELOG_RELEASE.md` from the `CHANGELOG.md` section whose heading is `## [<version>]`, where `<version>` is the triggering ref with a leading `v`/`V` stripped (same rule as step 3). If no heading matches, the entire `CHANGELOG.md` is used as a fallback. This file becomes the single source for both the GitHub release notes (step 7) and the changelog pushed to CurseForge/Wago/WoWInterface (step 9).
 6. **Upload asset to GitHub release** – `softprops/action-gh-release` attaches the generated zip.
 7. **Update GitHub release notes** (`update-release-notes`) – syncs the GitHub release body with `CHANGELOG_RELEASE.md` via `gh release edit`.
 8. **Determine publish targets** (`determine-publish-targets`) – exposes which provider secrets (CF/Wago/WoWI) are set so the packager step can auto-skip when nothing is configured.
-9. **Publish to addon services** – `BigWigsMods/packager@v2` uploads to CurseForge/Wago/WoWI when tokens are available and the release isn’t marked prerelease (or `skip_publish`).
+9. **Publish to addon services** – `BigWigsMods/packager@v2` uploads to CurseForge/Wago/WoWI when tokens are available and the release isn’t marked prerelease (or `skip_publish`). Per `.pkgmeta`'s `manual-changelog` setting, it sends the same `CHANGELOG_RELEASE.md` generated in step 5 (i.e. just the latest version's section), not the full `CHANGELOG.md`.
 
 ## Optional files
 
